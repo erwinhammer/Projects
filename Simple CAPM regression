@@ -1,0 +1,45 @@
+import numpy as np
+import statsmodels.api as sm
+import statsmodels.formula.api as smf
+import pandas as pd
+df = pd.read_excel (r'C:\Users\Erwin Hammer\Documents\Data\capm.xls')
+ge_returns = df['Return GE'].tolist()
+rf = df['USTB3M %'].tolist()
+spx_returns = df['Return S&P 500'].tolist()
+del rf[0]
+del spx_returns[0]
+del ge_returns[0] #fjerner NaN elementene
+rf_vector = np.array(rf) #liste med 3m risikofri rente
+spx_returns_vector = np.array(spx_returns)
+ge_returns_vector = np.array(ge_returns) #liste med GEs månedlige avkastninger
+excess_return = sm.add_constant(spx_returns_vector - rf_vector) #liste med R_market - R_f
+ge_excess = ge_returns_vector - rf_vector #liste med R_GE - R_f
+#Model: R_GE - R_f = Beta * (R_market - R_f) + epsilon
+regression = sm.OLS(ge_excess, excess_return)
+res = regression.fit()
+print(res.summary())
+                            OLS Regression Results                            
+==============================================================================
+Dep. Variable:                      y   R-squared:                       0.452
+Model:                            OLS   Adj. R-squared:                  0.448
+Method:                 Least Squares   F-statistic:                     109.7
+Date:                Tue, 03 Mar 2020   Prob (F-statistic):           4.28e-19
+Time:                        19:57:41   Log-Likelihood:                 183.55
+No. Observations:                 135   AIC:                            -363.1
+Df Residuals:                     133   BIC:                            -357.3
+Df Model:                           1                                         
+Covariance Type:            nonrobust                                         
+==============================================================================
+                 coef    std err          t      P>|t|      [0.025      0.975]
+------------------------------------------------------------------------------
+const          0.0093      0.006      1.593      0.114      -0.002       0.021
+x1             1.6524      0.158     10.476      0.000       1.340       1.964
+==============================================================================
+Omnibus:                        5.635   Durbin-Watson:                   2.026
+Prob(Omnibus):                  0.060   Jarque-Bera (JB):                7.050
+Skew:                          -0.218   Prob(JB):                       0.0294
+Kurtosis:                       4.031   Cond. No.                         29.3
+==============================================================================
+
+Warnings:
+[1] Standard Errors assume that the covariance matrix of the errors is correctly spe
